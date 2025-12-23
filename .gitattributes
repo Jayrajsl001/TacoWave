@@ -1,0 +1,4 @@
+model/*.pth filter=lfs diff=lfs merge=lfs -text
+demo/*.wav filter=lfs diff=lfs merge=lfs -text
+waveglow/*.pt filter=lfs diff=lfs merge=lfs -text
+waveglow/*.npy filter=lfs diff=lfs merge=lfs -text
