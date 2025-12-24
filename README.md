@@ -88,99 +88,150 @@ Wang and Zongheng Yang.
 
 
 
-
-
 # TacoWave: Fast and High-Fidelity End-to-End Speech Synthesis
 
-TacoWave is a fast, high-quality end-to-end (E2E) speech synthesis model designed to balance the *magic triangle* of **model size, synthesis accuracy, and inference speed**. The model predicts Mel spectrograms from text using an attention-based architecture and synthesizes waveforms using **BigVGAN** as a neural vocoder.
+TacoWave is a fast and high-quality **end-to-end (E2E) speech synthesis**
+framework designed to generate natural-sounding speech with **low inference
+latency** and **high perceptual fidelity**. The model balances the trade-off
+between **model size, synthesis accuracy, and real-time performance**, often
+referred to as the *magic triangle* in speech synthesis research.
 
-This repository accompanies the research paper:
-
-**TacoWave: Fast and High-Fidelity End-to-End Speech Synthesis Waveform Generation**
-
----
-
-## 🔍 Overview
-
-Recent E2E speech synthesis models achieve high perceptual quality at the cost of heavy computation and slow inference. TacoWave addresses this limitation by:
-
-- Introducing **forward attention** for stable and monotonic alignment
-- Replacing ReLU with **GELU activations** across convolutional components
-- Using a **deeper PostNet** for improved Mel-spectrogram refinement
-- Integrating **BigVGAN** for high-fidelity waveform generation
-
-TacoWave achieves **47.16× real-time inference** on an NVIDIA GTX 1080 (8GB) while maintaining strong perceptual and intelligibility performance.
+TacoWave extends the attention-based Tacotron family by incorporating
+**forward attention**, **GELU activations**, and a **deepened PostNet**, and
+leverages **BigVGAN** for high-fidelity waveform generation from Mel
+spectrograms.
 
 ---
 
-## 🧠 Model Architecture
+## 🔍 Key Contributions
 
-TacoWave follows a text-to-Mel-to-waveform pipeline:
-
-### Text-to-Mel Spectrogram
-- Character embedding (768-dim)
-- 5 × Conv1D layers (kernel size = 7, channels = 768)
-- Bidirectional LSTM (256 units per direction)
-- Forward attention mechanism
-- Decoder with 2 × LSTM layers (hidden size = 1280)
-- PostNet with 7 × Conv1D layers + BatchNorm + GELU
-
-### Mel-to-Waveform
-- **BigVGAN** neural vocoder
-- Anti-aliased Multi-Periodicity (AMP) modules
-- Multi-scale and multi-period discriminators
+- Forward attention mechanism for **stable and monotonic alignment**
+- GELU activation for improved **prosody preservation and training stability**
+- Deepened PostNet for refined Mel-spectrogram quality
+- End-to-end integration with **BigVGAN** neural vocoder
+- Fast inference with **47.16× real-time factor** on NVIDIA GTX 1080
 
 ---
 
-## ⚙️ Key Design Choices
+## 🧠 Model Overview
 
-- **Forward Attention**  
-  Enforces soft monotonic alignment for long-form and stable synthesis.
+TacoWave follows a two-stage pipeline:
 
-- **GELU Activation**  
-  Replaces ReLU to preserve low-energy phonetic and prosodic cues, improving gradient flow and training stability.
+1. **Text → Mel Spectrogram**
+   - Character embedding
+   - Convolutional encoder with GELU
+   - Bidirectional LSTM
+   - Forward attention-based decoder
+   - Deep PostNet refinement
 
-- **Deep PostNet**  
-  Enhances Mel-spectrogram refinement and spectral smoothness.
+2. **Mel Spectrogram → Waveform**
+   - BigVGAN GAN-based neural vocoder
+
+This design enables high-quality waveform synthesis while maintaining
+real-time capability.
 
 ---
 
 ## 📊 Dataset
 
-Experiments are conducted using the **LJ Speech Dataset**:
+Experiments were conducted using the **LJ Speech Dataset**, which contains
+high-quality recordings from a single female speaker with aligned transcripts.
 
-| Property | Value |
-|--------|-------|
-| Speaker | Single female |
-| Sampling Rate | 22,050 Hz |
-| Total Clips | 13,100 |
-| Total Duration | ~24 hours |
-| Avg Clip Duration | 6.57 sec |
+- Sampling rate: 22,050 Hz  
+- Total duration: ~24 hours  
+- Total utterances: 13,100  
 
 ---
 
-## 🏋️ Training Setup
+## 🧰 Pre-requisites
 
-- GPU: NVIDIA GTX 1080 (8GB)
-- CPU: Intel Core i7 (12th Gen)
-- OS: Ubuntu 24.04 LTS
-- Batch Size: 16
-- Training Steps: up to 50K
-- Learning Rate: 1e−3
+- NVIDIA GPU with CUDA and cuDNN
+- Python ≥ 3.8
+- PyTorch
+- NVIDIA Apex (optional, for mixed-precision training)
+- LJSpeech Dataset
+
+---
+
+## ⚙️ Setup
+
+### 1. Clone Repository
+```bash
+git clone <repository-url>
+cd tacowave
+```
+
+### 2. Install Dependencies
+```bash
+pip install -r requirements.txt
+```
+
+### 3. Download Dataset
+```bash
+wget https://keithito.com/LJ-Speech-Dataset/LJSpeech-1.1.tar.bz2
+tar -xvf LJSpeech-1.1.tar.bz2
+```
+
+### 4. Configure Dataset Paths
+Update dataset and wav paths in the configuration or filelists before training.
+
+---
+
+## 🏋️ Training
+
+To train TacoWave from scratch:
+
+```bash
+python train.py   --output_directory=outdir   --log_directory=logdir
+```
+
+(Optional) Monitor training using TensorBoard:
+```bash
+tensorboard --logdir=outdir/logdir
+```
+
+---
+
+## 🔁 Training with Pretrained Weights
+
+Training can be initialized using pretrained Tacotron-style weights to speed
+up convergence:
+
+```bash
+python train.py   --output_directory=outdir   --log_directory=logdir   --warm_start
+```
+
+---
+
+## ⚡ Distributed & Mixed Precision Training
+
+```bash
+python -m multiproc train.py   --output_directory=outdir   --log_directory=logdir   --hparams=distributed_run=True,fp16_run=True
+```
+
+---
+
+## 🎧 Inference
+
+- Load a trained TacoWave checkpoint
+- Generate Mel spectrograms from text
+- Convert Mel spectrograms to waveform using BigVGAN
+
+⚠️ Ensure both TacoWave and BigVGAN use the **same Mel configuration**.
 
 ---
 
 ## 📈 Evaluation Metrics
 
-### Subjective Metrics
-- **MOS** (Mean Opinion Score)
-- **NISQA-MOS**
+### Subjective
+- Mean Opinion Score (MOS)
+- NISQA-MOS
 
-### Quantitative Metrics
-- **CER** (Character Error Rate)
-- **WER** (Word Error Rate)
+### Quantitative
+- Character Error Rate (CER)
+- Word Error Rate (WER)
 
-### Objective Metrics
+### Objective
 - PESQ
 - MCD
 - MSD
@@ -192,50 +243,57 @@ Experiments are conducted using the **LJ Speech Dataset**:
 
 ## 🧪 Results Summary
 
-| Model | MOS ↑ | NISQA-MOS ↑ | CER ↓ | WER ↓ |
-|------|------|-------------|-------|-------|
-| TacoWave V1 | 4.15 | 3.47 | 1.32 | 1.78 |
-| **TacoWave V2** | **4.21** | **3.35** | **0.93** | **1.30** |
-
-- Achieves **47.16× real-time inference**
-- Strong intelligibility and naturalness
-- Better spectral continuity and harmonic richness compared to baseline vocoders
+- MOS: **4.21**
+- NISQA-MOS: **3.35**
+- Inference Speed: **47.16× real-time**
+- Improved prosody, intelligibility, and spectral consistency
 
 ---
 
-## 🚀 Inference Speed (RTF)
+## ⚠️ Limitations
 
-| Model | GPU | Real-Time Factor |
-|------|-----|------------------|
-| TacoWave V2 | GTX 1080 | **47.16×** |
-| TacoWave V1 | GTX 1080 | 23.25× |
-
----
-
-## 🧩 Known Limitations
-
-- Forward attention alignment can be hard to debug in long or out-of-domain text
-- Slightly higher WER in rare unseen scenarios
-- Lack of diagnostic visualization tools for attention misalignment
+- Forward attention alignment is difficult to debug in long-form synthesis
+- Slight degradation for out-of-domain text
+- Lack of explicit attention diagnostic tools
 
 ---
 
-## 📌 Future Work
+## 🔮 Future Work
 
-- Attention visualization and diagnostic tools
-- Robust alignment debugging for long-form synthesis
-- Enhanced generalization to out-of-domain text
-- Further reduction in model footprint
+- Attention alignment visualization tools
+- Improved robustness for long and unseen text
+- Model compression and lightweight variants
+- Multi-speaker and multilingual extensions
 
 ---
 
 ## 📄 Citation
 
-If you use TacoWave in your research, please cite:
+If you use this work, please cite:
 
 ```bibtex
 @article{lakkad2025tacowave,
-  title   = {TacoWave: Fast and High-Fidelity End-to-End Speech Synthesis Waveform Generation},
+  title   = {TacoWave: Fast and High-Fidelity End-to-End Speech Synthesis},
   author  = {Lakkad, Jayraj S. and Tiwari, Satyam R. and Savaliya, Laksh J.},
   year    = {2025}
 }
+```
+
+---
+
+## 🙏 Acknowledgements
+
+This research is inspired by and builds upon:
+- NVIDIA Tacotron 2
+- Keith Ito
+- Prem Seetharaman
+- Ryuichi Yamamoto
+
+We sincerely thank the authors of Tacotron, Tacotron 2, and BigVGAN for their
+foundational contributions to speech synthesis research.
+
+---
+
+## 📜 License
+
+This project is intended for **academic and research purposes only**.
