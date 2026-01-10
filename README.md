@@ -185,7 +185,7 @@ If you use this work, please cite:
 ```bibtex
 @article{lakkad2025tacowave,
   title   = {TacoWave: Fast and High-Fidelity End-to-End Speech Synthesis},
-  author  = {Lakkad, Jayraj S. and Tiwari, Satyam R. and Savaliya, Laksh J.},
+  author  = {Lakkad, **Jayraj** S. and Tiwari, **Satyam** R. and Savaliya, **Laksh** J. and Prajapati, **Akshar** V.},
   year    = {2025}
 }
 ```
