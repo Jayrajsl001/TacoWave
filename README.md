@@ -185,7 +185,7 @@ If you use this work, please cite:
 ```bibtex
 @article{lakkad2025tacowave,
   title   = {TacoWave: Fast and High-Fidelity End-to-End Speech Synthesis},
-  author  = {Lakkad, **Jayraj** S. and Tiwari, **Satyam** R. and Savaliya, **Laksh** J. and Prajapati, **Akshar** V.},
+  author  = {Lakkad, Jayraj S. and Tiwari, Satyam R. and Savaliya, Laksh J. and Prajapati, Akshar V.},
   year    = {2025}
 }
 ```
@@ -208,3 +208,5 @@ foundational contributions to speech synthesis research.
 ## 📜 License
 
 This project is intended for **academic and research purposes only**.
+TacoWave is released under the **Creative Commons Attribution 4.0 (CC BY 4.0)** license.
+
